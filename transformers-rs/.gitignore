@@ -1,4 +1,4 @@
 /target
 *.pt
-# model/
+model/
 libtorch/
