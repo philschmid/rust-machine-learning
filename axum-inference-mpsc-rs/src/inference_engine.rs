@@ -38,7 +38,8 @@ pub async fn predict(mut rx: mpsc::Receiver<MpscInferencePayload>) {
     let model = TorchscriptModel::new("model/model.pt");
 
     while let Some(payload) = rx.recv().await {
-        // tokio::task::spawn_blocking(|| {
+        // TODO: is misisng copy trait
+        // tokio::task::spawn_blocking(move || {
         let encoding = tokenizer.encode(payload.payload.inputs, true).unwrap();
 
         let ids = encoding
@@ -67,6 +68,7 @@ pub async fn predict(mut rx: mpsc::Receiver<MpscInferencePayload>) {
         let predictions = model.forward(ids, attention_mask).unwrap();
         let label = Vec::<u8>::from(predictions.argmax(1, false))[0];
         let _ = payload.resp.send(label.to_string());
+        model
         // })
         // .await
         // .unwrap();
