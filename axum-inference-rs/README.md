@@ -15,7 +15,7 @@ chmod +x ./target/release/axum-inference-rs
 ## Test
 
 ```bash
-hey -n 200 -c 2 -m POST -H 'Content-Type: application/json' -d '{	"inputs": "I love you. I like you. I am your friend."}' http://127.0.0.1:3000/predict
+hey -n 200 -c 1 -m POST -H 'Content-Type: application/json' -d '{	"inputs": "I love you. I like you. I am your friend."}' http://127.0.0.1:3000/predict
 ```
 
 Runs for `-c 1`
