@@ -15,13 +15,13 @@ chmod +x ./target/release/axum-inference-rs
 ## Test
 
 ```bash
-hey -n 200 -c 1 -m POST -H 'Content-Type: application/json' -d '{	"inputs": "I love you. I like you. I am your friend."}' http://127.0.0.1:3000/predict
+hey -n 2000 -c 4 -m POST -H 'Content-Type: application/json' -d '{	"inputs": "I love you. I like you. I am your friend."}' http://127.0.0.1:3000/predict
 ```
 
 Runs for `-c 1`
 
 ```
-ummary:
+Summary:
   Total:        6.8468 secs
   Slowest:      0.0543 secs
   Fastest:      0.0311 secs
@@ -71,4 +71,29 @@ Response time histogram:
   0.062 [6]     |■■■■
   0.064 [2]     |■
   0.066 [2]     |■
+```
+
+```
+Summary:
+  Total:        63.8938 secs
+  Slowest:      0.2154 secs
+  Fastest:      0.0366 secs
+  Average:      0.1272 secs
+  Requests/sec: 31.3020
+  
+  Total data:   80000 bytes
+  Size/request: 40 bytes
+
+Response time histogram:
+  0.037 [1]     |
+  0.054 [0]     |
+  0.072 [5]     |
+  0.090 [28]    |■
+  0.108 [212]   |■■■■■■■■■■■
+  0.126 [671]   |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.144 [776]   |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.162 [280]   |■■■■■■■■■■■■■■
+  0.180 [22]    |■
+  0.197 [3]     |
+  0.215 [2]     |
 ```

@@ -54,6 +54,7 @@ async fn predict_route(
 ) -> impl IntoResponse {
     // println!("{:?}", payload);
     // let now = std::time::Instant::now();
+
     let pred = Python::with_gil(|py| {
         // println!("loading python {}", now.elapsed().as_millis());
         // let now = std::time::Instant::now();
