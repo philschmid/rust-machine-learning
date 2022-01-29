@@ -1,11 +1,8 @@
 use std::path::Path;
 
-use anyhow::{bail, Result};
-use lib::{
-    base::Pipeline, modeling_utils::OnnxModel,
-    tasks::text_classification::TextClassificationPipeline,
-};
-use tokenizers::Tokenizer;
+use anyhow::Result;
+use lib::tasks::{text_classification::TextClassificationPipeline, Pipeline};
+// use tokenizers::Tokenizer;
 
 fn benchmark(seq_len: u8, mut pipeline: TextClassificationPipeline) {
     let loops = 1000;
@@ -27,13 +24,10 @@ fn benchmark(seq_len: u8, mut pipeline: TextClassificationPipeline) {
 
 fn main() -> Result<()> {
     let path = Path::new("model");
-    let model = OnnxModel::from_file(path)?;
-    let tokenizer = match Tokenizer::from_file(path.join("tokenizer.json")) {
-        Ok(tk) => tk,
-        Err(err) => bail!("{}", err),
-    };
-
-    let mut pipeline = TextClassificationPipeline::new(model, tokenizer);
+    // let model = OnnxModel::from_path(path)?;
+    // let tokenizer = Tokenizer::from_path(path)?;
+    // let mut pipeline = TextClassificationPipeline::new(model, tokenizer);
+    let mut pipeline = TextClassificationPipeline::from_path(path)?;
 
     let input = "I like you. I love you.";
     // let input = "I hate you.";

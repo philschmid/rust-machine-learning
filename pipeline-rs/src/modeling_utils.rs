@@ -16,7 +16,7 @@ pub struct OnnxModel {
 }
 
 impl OnnxModel {
-    pub fn from_file(model_path: &Path) -> Result<Self> {
+    pub fn from_path(model_path: &Path) -> Result<Self> {
         let environment = Environment::builder()
             .with_name("app")
             .with_log_level(LoggingLevel::Verbose)
@@ -27,7 +27,7 @@ impl OnnxModel {
             // .with_number_threads(4)?
             .with_model_from_file(model_path.join("model.onnx"))?;
 
-        let config = Config::from_file(model_path)?;
+        let config = Config::from_file(&model_path.join("config.json"))?;
         Ok(OnnxModel { session, config })
     }
 }
@@ -40,7 +40,7 @@ pub struct Config {
 impl Config {
     pub fn from_file(config_path: &Path) -> Result<Self> {
         // Open the file in read-only mode with buffer.
-        let file = File::open(config_path.join("config.json"))?;
+        let file = File::open(config_path)?;
         let reader = BufReader::new(file);
 
         // Read the JSON contents of the file as an instance of `User`.

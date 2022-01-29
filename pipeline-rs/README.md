@@ -45,7 +45,9 @@ Benchmark: seq_len=128; avg=22183µs
 
 ## Todo
 
-* [ ] add `cargo bench``
+* [ ] add `cargo bench`
+* [ ] wrap `tokenizer` for easier error handle and configuration for GPU
+* [ ] add `from_path` to `Pipeline` trait
 * [ ] add batching
 * [ ] add configuration parameters, like all scores, or only the top-k
 * [ ] test Ice-lake and other models

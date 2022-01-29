@@ -1,16 +1,16 @@
 use anyhow::Result;
 use ndarray_stats::QuantileExt;
-use std::ops::Deref;
+use std::{ops::Deref, path::Path};
 
 use ndarray::{Array, ArrayBase, Dim, IxDynImpl, OwnedRepr};
 use onnxruntime::tensor;
 use tokenizers::Tokenizer;
 
 use crate::{
-    base::{EmbeddingArray, Pipeline},
-    modeling_utils::OnnxModel,
-    statistical_utils::softmax,
+    modeling_utils::OnnxModel, statistical_utils::softmax, tokenizer_utils::TokenizerUtils,
 };
+
+use super::{EmbeddingArray, Pipeline};
 
 pub struct TextClassificationPipeline {
     pub model: OnnxModel,
@@ -26,6 +26,12 @@ pub struct TextClassificationOutput {
 impl Pipeline<OnnxModel, Tokenizer, TextClassificationOutput> for TextClassificationPipeline {
     fn new(model: OnnxModel, tokenizer: Tokenizer) -> Self {
         TextClassificationPipeline { model, tokenizer }
+    }
+    fn from_path(path: &Path) -> Result<Self> {
+        Ok(Self::new(
+            OnnxModel::from_path(path)?,
+            Tokenizer::from_path(path)?,
+        ))
     }
 
     fn preprocess(&self, input: &str) -> Result<EmbeddingArray> {
