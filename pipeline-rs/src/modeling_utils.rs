@@ -1,3 +1,4 @@
+use onnxruntime::GraphOptimizationLevel;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs::File;
@@ -22,6 +23,8 @@ impl OnnxModel {
             .build()?;
         let session = environment
             .new_session_builder()?
+            .with_optimization_level(GraphOptimizationLevel::All)?
+            // .with_number_threads(4)?
             .with_model_from_file(model_path.join("model.onnx"))?;
 
         let config = Config::from_file(model_path)?;

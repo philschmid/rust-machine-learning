@@ -1,8 +1,51 @@
 # Pipeline modules implemented with `ONNX` and `tokenizers`
 
 
+```bash
+cargo build --release
+
+cargo run --release
+
+```
+
+### Benchmark
+
+`Cascade-lake` cpu
+```bash
+model name      : Intel(R) Xeon(R) Platinum 8259CL CPU @ 2.50GHz
+physical id     : 0
+siblings        : 4
+core id         : 0
+cpu cores       : 2
+apicid          : 0
+initial apicid  : 0
+```
+
+without defining `with_number_threads`:
+
+```bash
+Benchmark: seq_len=8; avg=3335µs
+Benchmark: seq_len=16; avg=4542µs
+Benchmark: seq_len=32; avg=7166µs
+Benchmark: seq_len=64; avg=12930µs
+Benchmark: seq_len=128; avg=22862µs
+```
+with `.with_number_threads(4)`
+
+```bash
+Benchmark: seq_len=64; avg=11683µs
+Benchmark: seq_len=128; avg=22183µs
+```
+
 ## Resources
 
 * [softmax](https://github.com/CasperN/drug/blob/1a7cc4532aa4bdb7ce091a53d2d6b14ab2d5a0dd/src/lib.rs#L77)
 * [argmax: statistical methods for ndarray's ArrayBase type.](https://github.com/rust-ndarray/ndarray-stats)
 * [ndarray](https://github.com/rust-ndarray/ndarray)
+
+## Todo
+
+* [ ] add `cargo bench``
+* [ ] add batching
+* [ ] add configuration parameters, like all scores, or only the top-k
+* [ ] test Ice-lake and other models
