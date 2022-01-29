@@ -66,6 +66,7 @@ impl Pipeline<OnnxModel, Tokenizer, TextClassificationOutput> for TextClassifica
         predictions: ArrayBase<OwnedRepr<f32>, Dim<IxDynImpl>>,
     ) -> Result<TextClassificationOutput> {
         let scores = softmax(predictions)?;
+        // let scores = predictions.to_owned().into_dimensionality::<Ix2>()?;
 
         let label = self
             .model
