@@ -40,11 +40,15 @@ Benchmark: seq_len=32; avg=7166µs
 Benchmark: seq_len=64; avg=12930µs
 Benchmark: seq_len=128; avg=22862µs
 ```
-with `.with_number_threads(4)`
 
+python tests
 ```bash
-Benchmark: seq_len=64; avg=11683µs
-Benchmark: seq_len=128; avg=22183µs
+Benchmark: seq_len=8; avg=3194.565534591675µs
+Benchmark: seq_len=16; avg=4181.376695632935µs
+Benchmark: seq_len=32; avg=6296.816349029541µs
+Benchmark: seq_len=64; avg=10360.423564910889µs
+Benchmark: seq_len=128; avg=19073.987007141113µs
+Benchmark: seq_len=256; avg=39876.47366523743µs
 ```
 
 ## Resources
