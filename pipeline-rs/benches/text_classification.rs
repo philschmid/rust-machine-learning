@@ -5,34 +5,31 @@ use lib::tasks::{text_classification::TextClassificationPipeline, Pipeline};
 
 fn text_classification_benchmark(c: &mut Criterion) {
     let mut pipeline = TextClassificationPipeline::from_path(Path::new("model")).unwrap();
+    let sequence_length = vec![8, 16, 32, 64, 128, 256, 512];
     // sequence length 8
-    c.bench_function("text_classification;sequence_length 8", |b| {
-        b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(8).as_str())))
-    });
-    // sequence length 16
-    c.bench_function("text_classification;sequence_length 16", |b| {
-        b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(16).as_str())))
-    });
-    // sequence length 32
-    c.bench_function("text_classification;sequence_length 32", |b| {
-        b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(32).as_str())))
-    });
-    // sequence length 64
-    c.bench_function("text_classification;sequence_length 64", |b| {
-        b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(64).as_str())))
-    });
-    // sequence length 128
-    c.bench_function("text_classification;sequence_length 128", |b| {
-        b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(128).as_str())))
-    });
-    // sequence length 256
-    c.bench_function("text_classification;sequence_length 256", |b| {
-        b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(256).as_str())))
-    });
-    // sequence length 512
-    c.bench_function("text_classification;sequence_length 512", |b| {
-        b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(512).as_str())))
-    });
+
+    for seq in &sequence_length {
+        c.bench_function(
+            format!("preprocessing;sequence_length {}", seq).as_str(),
+            |b| b.iter(|| pipeline.preprocess(black_box::<&str>(" I".repeat(seq - 2).as_str()))),
+        );
+        let processed_input = pipeline.preprocess(" I".repeat(seq - 2).as_str()).unwrap();
+
+        c.bench_function(
+            format!("prediction;sequence_length {}", seq).as_str(),
+            |b| b.iter(|| pipeline.predict(black_box(processed_input.clone()))),
+        );
+        let predicted_output = pipeline
+            .predict(pipeline.preprocess(" I".repeat(seq - 2).as_str()).unwrap())
+            .unwrap();
+        c.bench_function(
+            format!("postprocessing;sequence_length {}", seq).as_str(),
+            |b| b.iter(|| pipeline.postprocess(black_box(predicted_output.clone()))),
+        );
+        c.bench_function(format!("e2e;sequence_length {}", seq).as_str(), |b| {
+            b.iter(|| pipeline.call(black_box::<&str>(" I".repeat(seq - 2).as_str())))
+        });
+    }
 }
 
 criterion_group!(benches, text_classification_benchmark);
