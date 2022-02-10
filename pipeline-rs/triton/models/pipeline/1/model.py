@@ -1,5 +1,14 @@
 import triton_python_backend_utils as pb_utils
+from transformers import AutoTokenizer
+import os
+import numpy as np
 import json
+
+
+def softmax(_outputs):
+    maxes = np.max(_outputs, axis=-1, keepdims=True)
+    shifted_exp = np.exp(_outputs - maxes)
+    return shifted_exp / shifted_exp.sum(axis=-1, keepdims=True)
 
 
 class TritonPythonModel:
@@ -24,8 +33,7 @@ class TritonPythonModel:
         """
 
         # You must parse model_config. JSON string is not parsed here
-        self.model_config = json.loads(args["model_config"])
-        print("Model config: {}".format(self.model_config))
+        self.tokenizer = AutoTokenizer.from_pretrained(os.path.join(args["model_repository"], args["model_version"]))
 
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
@@ -52,23 +60,24 @@ class TritonPythonModel:
         # and create a pb_utils.InferenceResponse for each of them.
         for request in requests:
             # Get INPUT0
-            in_0 = pb_utils.get_input_tensor_by_name(request, "TEXT")
+            input_as_triton_tensor = pb_utils.get_input_tensor_by_name(request, "TEXT")
+            decoded_input = input_as_triton_tensor.as_numpy()[0].decode("utf-8")
 
-            # Get Model Name
-            model_name = pb_utils.get_input_tensor_by_name(request, "MODEL_NAME")
+            # preprocess
+            inputs = self.tokenizer(decoded_input, return_tensors="np")
+            processed_input = [
+                pb_utils.Tensor("input_ids", inputs["input_ids"]),
+                pb_utils.Tensor("attention_mask", inputs["attention_mask"]),
+            ]
 
-            # Model Name string
-            model_name_string = model_name.as_numpy()[0]
-
-            # Create inference request object
+            # CALL BERT Model
             infer_request = pb_utils.InferenceRequest(
-                model_name=model_name_string,
+                model_name="bert",
                 requested_output_names=[
-                    "OUTPUT0",
+                    "probabilities",
                 ],
-                inputs=[in_0],
+                inputs=processed_input,
             )
-
             # Perform synchronous blocking inference request
             infer_response = infer_request.exec()
 
@@ -78,18 +87,14 @@ class TritonPythonModel:
             if infer_response.has_error():
                 raise pb_utils.TritonModelException(infer_response.error().message())
 
-            # Create InferenceResponse. You can set an error here in case
-            # there was a problem with handling this inference request.
-            # Below is an example of how you can set errors in inference
-            # response:
-            #
-            # pb_utils.InferenceResponse(
-            #    output_tensors=..., TritonError("An error occured"))
-            #
-            # Because the infer_response of the models contains the final
-            # outputs with correct output names, we can just pass the list
-            # of outputs to the InferenceResponse object.
-            inference_response = pb_utils.InferenceResponse(output_tensors=infer_response.output_tensors())
+            # Postprocess request
+            scores = softmax(infer_response.output_tensors()[0].as_numpy()[0])
+            res = {"label": scores.argmax().item(), "score": scores.max().item()}
+
+            out_tensor_0 = pb_utils.Tensor("PREDICTION", np.array([json.dumps(res)], dtype=object))
+
+            # Create InferenceResponse.
+            inference_response = pb_utils.InferenceResponse(output_tensors=[out_tensor_0])
             responses.append(inference_response)
 
         # You should return a list of pb_utils.InferenceResponse. Length
